@@ -1,13 +1,15 @@
+from dataclasses import Field
 from datetime import datetime, timedelta, timezone
 from math import ceil
-from typing import Optional
+from typing import List, Optional
 from fastapi import FastAPI, Depends, Query, HTTPException
+from openai import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from database import engine, get_db, Base
 from models import Job
 from schemas import JobResponse, JobListResponse
-
+from recommendation import RecommendationEngine
 
 # ==========================================================
 # CREATE DATABASE TABLES
@@ -489,4 +491,111 @@ def get_statistics(
         "total_companies": total_companies,
         "total_categories": total_categories,
         "total_locations": total_locations,
+    }
+
+
+class UserProfile(BaseModel):
+
+    education: Optional[str] = ""
+
+    skills: List[str] = Field(
+        default_factory=list
+    )
+
+    experience: Optional[str] = ""
+
+    category: Optional[str] = ""
+
+    location: Optional[str] = ""
+
+    employment_type: Optional[str] = ""
+
+    top_n: int = Field(
+        default=10,
+        ge=1,
+        le=50
+    )
+
+# ==========================================================
+# RECOMMENDATION ENDPOINT
+# ==========================================================
+
+@app.post("/api/recommend")
+def recommend_jobs(profile: UserProfile):
+
+    # ------------------------------------------------------
+    # Create user profile text
+    # ------------------------------------------------------
+
+    profile_parts = []
+
+    if profile.education:
+        profile_parts.append(
+            f"Education: {profile.education}"
+        )
+
+    if profile.skills:
+
+        profile_parts.append(
+            "Skills: " + ", ".join(profile.skills)
+        )
+
+    if profile.experience:
+        profile_parts.append(
+            f"Experience: {profile.experience}"
+        )
+
+    if profile.category:
+        profile_parts.append(
+            f"Category: {profile.category}"
+        )
+
+    if profile.location:
+        profile_parts.append(
+            f"Location: {profile.location}"
+        )
+
+    if profile.employment_type:
+        profile_parts.append(
+            f"Employment Type: {profile.employment_type}"
+        )
+
+
+    # ------------------------------------------------------
+    # Combine everything
+    # ------------------------------------------------------
+
+    user_profile = " ".join(profile_parts)
+
+
+    # ------------------------------------------------------
+    # Check empty profile
+    # ------------------------------------------------------
+
+    if not user_profile.strip():
+
+        raise HTTPException(
+            status_code=400,
+            detail="User profile is empty."
+        )
+
+
+    # ------------------------------------------------------
+    # Get recommendations
+    # ------------------------------------------------------
+
+    recommendations = RecommendationEngine.recommend(
+        user_profile=user_profile,
+        top_n=profile.top_n
+    )
+
+
+    # ------------------------------------------------------
+    # Return response
+    # ------------------------------------------------------
+
+    return {
+        "success": True,
+        "count": len(recommendations),
+        "recommendations": recommendations
     }
