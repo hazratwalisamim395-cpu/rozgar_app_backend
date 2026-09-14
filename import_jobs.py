@@ -11,7 +11,6 @@ from models import Job
 
 Base.metadata.create_all(bind=engine)
 
-
 def sync_jobs():
 
     # ==========================================================
@@ -135,3 +134,6 @@ while True:
     print("Next synchronization in 5 hours...")
 
     time.sleep(3 * 60 * 60)
+
+
+sync_jobs()
