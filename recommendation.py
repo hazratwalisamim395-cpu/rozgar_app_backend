@@ -116,7 +116,6 @@ class RecommendationEngine:
     ):
 
         if not user_profile:
-
             return []
 
 
@@ -124,10 +123,8 @@ class RecommendationEngine:
         # Convert user profile to TF-IDF vector
         # --------------------------------------------------
 
-        user_vector = (
-            self.vectorizer.transform(
-                [user_profile]
-            )
+        user_vector = self.vectorizer.transform(
+            [user_profile]
         )
 
 
@@ -135,12 +132,10 @@ class RecommendationEngine:
         # Calculate similarity
         # --------------------------------------------------
 
-        similarity_scores = (
-            cosine_similarity(
-                user_vector,
-                self.tfidf_matrix
-            )[0]
-        )
+        similarity_scores = cosine_similarity(
+            user_vector,
+            self.tfidf_matrix
+        )[0]
 
 
         # --------------------------------------------------
@@ -156,9 +151,7 @@ class RecommendationEngine:
         # Select top jobs
         # --------------------------------------------------
 
-        top_indices = (
-            recommended_indices[:top_n]
-        )
+        top_indices = recommended_indices[:top_n]
 
 
         # --------------------------------------------------
@@ -172,9 +165,12 @@ class RecommendationEngine:
 
             job = self.df.iloc[index]
 
-
-            # Convert NaN to None
             job_data = {}
+
+
+            # --------------------------------------------------
+            # Convert Pandas / NumPy values to JSON-safe values
+            # --------------------------------------------------
 
             for column, value in job.items():
 
@@ -184,14 +180,19 @@ class RecommendationEngine:
 
                 else:
 
+                    # Convert NumPy values to Python values
+                    if hasattr(value, "item"):
+                        value = value.item()
+
                     job_data[column] = value
 
 
+            # --------------------------------------------------
             # Add similarity score
+            # --------------------------------------------------
+
             job_data["similarity"] = round(
-                float(
-                    similarity_scores[index]
-                ),
+                float(similarity_scores[index]),
                 4
             )
 

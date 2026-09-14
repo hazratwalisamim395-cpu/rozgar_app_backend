@@ -28,6 +28,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
+recommendation_engine = RecommendationEngine(
+    "acbar_jobs.csv"
+)
 
 # ==========================================================
 # HOME
@@ -520,7 +523,7 @@ class UserProfile(BaseModel):
 # RECOMMENDATION ENDPOINT
 # ==========================================================
 
-@app.post("/api/recommend")
+@app.post("/api/recommended")
 def recommend_jobs(profile: UserProfile):
 
     # ------------------------------------------------------
@@ -535,7 +538,6 @@ def recommend_jobs(profile: UserProfile):
         )
 
     if profile.skills:
-
         profile_parts.append(
             "Skills: " + ", ".join(profile.skills)
         )
@@ -560,35 +562,30 @@ def recommend_jobs(profile: UserProfile):
             f"Employment Type: {profile.employment_type}"
         )
 
-
     # ------------------------------------------------------
-    # Combine everything
+    # Combine profile information
     # ------------------------------------------------------
 
     user_profile = " ".join(profile_parts)
-
 
     # ------------------------------------------------------
     # Check empty profile
     # ------------------------------------------------------
 
     if not user_profile.strip():
-
         raise HTTPException(
             status_code=400,
             detail="User profile is empty."
         )
 
-
     # ------------------------------------------------------
     # Get recommendations
     # ------------------------------------------------------
 
-    recommendations = RecommendationEngine.recommend(
+    recommendations = recommendation_engine.recommend(
         user_profile=user_profile,
         top_n=profile.top_n
     )
-
 
     # ------------------------------------------------------
     # Return response
