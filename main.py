@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import List, Optional
 from fastapi import FastAPI, Depends, Query, HTTPException
-from openai import BaseModel
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from database import engine, get_db, Base
