@@ -1,4 +1,4 @@
-from dataclasses import Field
+from pydantic  import Field
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import List, Optional
