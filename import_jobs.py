@@ -18,6 +18,7 @@ def sync_jobs():
     # ==========================================================
 
     df = pd.read_csv("acbar_jobs.csv")
+    print(df.shape)
 
     # ==========================================================
     # REPLACE NaN WITH NONE
@@ -125,15 +126,12 @@ def sync_jobs():
 # RUN EVERY 5 HOURS
 # ==========================================================
 
-while True:
+# while True:
 
-    print("===================================")
-    print("Starting job database synchronization...")
-    print("===================================")
-    sync_jobs()
-    print("Next synchronization in 5 hours...")
-
-    time.sleep(3 * 60 * 60)
-
-
+#     print("===================================")
+#     print("Starting job database synchronization...")
+#     print("===================================")
 sync_jobs()
+    # print("Next synchronization in 5 hours...")
+
+    # time.sleep(3 * 60 * 60)
